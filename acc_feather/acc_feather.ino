@@ -1,8 +1,17 @@
 #include <SPI.h>
 #include <SD.h>
+#include <Wire.h>
+#include <SFE_LSM9DS0.h>
 
+//IMU
+#define LSM9DS0_XM  0x1D // Would be 0x1E if SDO_XM is LOW
+#define LSM9DS0_G   0x6B // Would be 0x6A if SDO_G is LOW
+LSM9DS0 dof(MODE_I2C, LSM9DS0_G, LSM9DS0_XM);
+#define PRINT_CALCULATED
+
+
+//SD
 #define cardSelect 4
-
 File logfile;
 
 // blink out an error code
@@ -21,7 +30,6 @@ void error(uint8_t errno) {
   }
 }
 
-int acceleration [] = {0,0,0,0};
 
 void setup() {
  
@@ -54,28 +62,28 @@ void setup() {
   }
 }
 
+//IMU
+  uint16_t status = dof.begin();
+ //Serial.print("LSM9DS0 WHO_AM_I's returned: 0x");
+  //Serial.println(status, HEX);
+  //Serial.println("Should be 0x49D4");
+
+  
 void loop() {
   // put your main code here, to run repeatedly:
 
 
-
-/* for (int i =0; i<2; I++){
-  acceleration [i] = analogRead(i));
-}
-
-acceleration[3]= millis(); */
-
 digitalWrite(8, HIGH);
 
    logfile.print(millis());
-   logfile.print(", "); logfile.print(analogRead(0));
-   logfile.print(", "); logfile.print(analogRead(1));
-   logfile.print(", "); logfile.println(analogRead(2));
+   logfile.print(", "); logfile.print(dof.calcAccel(dof.ax), 2);
+   logfile.print(", "); logfile.print(dof.calcAccel(dof.ay), 2);
+   logfile.print(", "); logfile.println(dof.calcAccel(dof.az), 2);
 
    Serial.print(millis());
-   Serial.print(", "); Serial.print(analogRead(0));
-   Serial.print(", "); Serial.print(analogRead(1));
-  Serial.print(", "); Serial.println(analogRead(2));
+   Serial.print(", "); Serial.print(dof.calcAccel(dof.ax), 2);
+   Serial.print(", "); Serial.print(dof.calcAccel(dof.ay), 2);
+  Serial.print(", "); Serial.println(dof.calcAccel(dof.az), 2);
   digitalWrite(8, LOW);
 
   logfile.flush();
